@@ -1,11 +1,45 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 from starlette import status
+
+import core.PaperApp.schema as paper_schema
+import core.PaperApp.crud as paper_crud
 
 router = APIRouter(
     prefix="/api/paper",
 )
 
-@router.get("/hello")
-def hello():
-    return {"message": "Hello World!"}
+@router.get("/list", response_model=paper_schema.PaperList)
+def get_paper_list(page: int = 0, size: int = 10):
+    total, paper_list = paper_crud.get_paper_list(skip=page*size, limit=size)
+    return {
+        'total': total,
+        'paper_list': paper_list
+    }
+
+@router.get("/detail/{paper_id}", response_model=paper_schema.PaperDetail)
+def get_paper_detail(paper_id: int):
+    paper = paper_crud.get_paper(paper_id=paper_id)
+    return paper
+
+@router.post("/create", status_code=status.HTTP_201_CREATED)
+def create_paper(paper_create: paper_schema.PaperCreate):
+    paper_crud.create_paper(paper_create=paper_create)
+
+@router.delete("/delete", status_code=status.HTTP_204_NO_CONTENT)
+def delete_paper(paper_id: int):
+    db_paper = paper_crud.get_paper(paper_id=paper_id)
+    if not db_paper:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="데이터를 찾을수 없습니다.")
+    paper_crud.delete_paper(paper_id=paper_id)
+
+"""
+TODO
+- 실제 DB 연동
+- access token 검증 기능 추가
+- create_paper에서 구글 스칼라 기반 파싱 기능 구현
+- update_paper 기능 구현
+- like_paper 기능 구현
+- withdraw_like_paper 기능 구현
+- 상태 코드 및 API 명세서 정리
+"""
