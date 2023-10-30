@@ -29,7 +29,5 @@ def create_paper(db: Cursor, paper_create: PaperCreate):
     db.connection.commit()
 
 def delete_paper(db: Cursor, paper_id: int):
-    for idx in range(len(PAPERS)):
-        if PAPERS[idx]['id']==paper_id:
-            PAPERS.pop(idx)
-            break
+    db.execute(f"DELETE FROM paper WHERE id={paper_id}")
+    db.connection.commit()
