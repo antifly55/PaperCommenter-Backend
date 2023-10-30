@@ -19,22 +19,22 @@ def get_paper_list(page: int = 0, size: int = 10, db: Cursor = Depends(get_db)):
         'paper_list': paper_list
     }
 
-@router.get("/detail/{paper_id}", response_model=paper_schema.Paper)
-def get_paper_detail(paper_id: int, db: Cursor = Depends(get_db)):
-    paper = paper_crud.get_paper(db=db, paper_id=paper_id)
-    return paper
+@router.get("/detail/{slug}", response_model=paper_schema.Paper)
+def get_paper_detail(slug: str, db: Cursor = Depends(get_db)):
+    db_paper = paper_crud.get_paper_by_slug(db=db, slug=slug)
+    return db_paper
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 def create_paper(paper_create: paper_schema.PaperCreate, db: Cursor = Depends(get_db)):
     paper_crud.create_paper(db=db, paper_create=paper_create)
 
 @router.delete("/delete", status_code=status.HTTP_204_NO_CONTENT)
-def delete_paper(paper_id: int, db: Cursor = Depends(get_db)):
-    db_paper = paper_crud.get_paper(db=db, paper_id=paper_id)
+def delete_paper(slug: str, db: Cursor = Depends(get_db)):
+    db_paper = paper_crud.get_paper_by_slug(db=db, slug=slug)
     if not db_paper:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="데이터를 찾을수 없습니다.")
-    paper_crud.delete_paper(db=db, paper_id=paper_id)
+    paper_crud.delete_paper(db=db, paper_id=db_paper['id'])
 
 """
 TODO
