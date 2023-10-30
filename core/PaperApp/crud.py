@@ -16,7 +16,7 @@ def get_paper_list(db: Cursor, skip: int = 0, limit: int = 10):
     return total, paper_list
 
 def get_paper_by_slug(db: Cursor, slug: str):
-    db.execute(f"SELECT * FROM paper WHERE slug={slug}")
+    db.execute(f"SELECT * FROM paper WHERE slug='{slug}'")
     paper = db.fetchone()
 
     return paper
