@@ -3,27 +3,28 @@ import datetime
 from pydantic import BaseModel
 
 class Paper(BaseModel):
-    id: int
-
+    slug: str
     title: str
-    abstract: str
-    year: int
+    authors: str
+    publish_year: int
     publisher: str
-    url: str
+    site_url: str
+    paper_url: str
     
     create_datetime: datetime.datetime
     modify_datetime: datetime.datetime | None = None
 
-class PaperCreate(BaseModel):
-    title: str
-    abstract: str
-    year: int
-    publisher: str
-    url: str
-    content: str
+    like_count: int
+    comment_count: int
 
-class PaperDetail(Paper):
-    content: str
+class PaperCreate(BaseModel):
+    slug: str
+    title: str
+    authors: str
+    publish_year: int
+    publisher: str
+    site_url: str
+    paper_url: str
 
 class PaperList(BaseModel):
     total: int = 0
