@@ -4,30 +4,38 @@ COMMENTS = [
     {
         'id': 1,
         'paper_id': 1,
+        'username': "abc",
         'content': "abc",
         'create_datetime': datetime.now(),
-        'modify_datetime': datetime.now()
+        'modify_datetime': datetime.now(),
+        'like_count': 0
     },
     {
         'id': 2,
         'paper_id': 1,
+        'username': "abc",
         'content': "abcd",
         'create_datetime': datetime.now(),
-        'modify_datetime': datetime.now()
+        'modify_datetime': datetime.now(),
+        'like_count': 0
     },
     {
         'id': 3,
         'paper_id': 2,
+        'username': "abc",
         'content': "abcde",
         'create_datetime': datetime.now(),
-        'modify_datetime': datetime.now()
+        'modify_datetime': datetime.now(),
+        'like_count': 0
     },
     {
         'id': 4,
         'paper_id': 3,
+        'username': "abc",
         'content': "abcdef",
         'create_datetime': datetime.now(),
-        'modify_datetime': datetime.now()
+        'modify_datetime': datetime.now(),
+        'like_count': 0
     },
 ]
 
