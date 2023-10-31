@@ -29,6 +29,7 @@ def create_comment(db: Cursor, paper_id: int, content: str):
 def update_comment(db: Cursor, comment_id: int, content: str):
     now = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     db.execute(f"UPDATE comment SET content='{content}', modify_datetime='{now}' WHERE id={comment_id}")
+    db.connection.commit()
 
 def delete_comment(db: Cursor, comment_id: int):
     db.execute(f"DELETE FROM comment WHERE id={comment_id}")
