@@ -95,7 +95,8 @@ def delete_user(cur_password: str,
     user_crud.delete_user(db=db, user_id=db_user['id'])
 
 @router.post("/update/refresh", response_model=user_schema.Tokens)
-def update_refresh_token(refresh_token: str = Depends(oauth2_scheme)):
+def update_refresh_token(refresh_token: str = Depends(oauth2_scheme),
+                         db: Cursor = Depends(get_db)):
     db_user = user_crud.get_user_by_token(db=db, token=refresh_token)
     db_refresh_token = user_crud.get_refresh_token(user_id=db_user['id'])
     if refresh_token == db_refresh_token:

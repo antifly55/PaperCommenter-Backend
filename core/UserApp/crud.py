@@ -58,10 +58,13 @@ def update_password(db: Cursor, user_id: int, password: str):
     pass
 
 def get_refresh_token(user_id: int):
-    pass
+    if user_id not in REFRESH_TOKENS_DB.keys():
+        return None
+    return REFRESH_TOKENS_DB[user_id]
 
 def update_refresh_token(user_id: int, refresh_token: str):
-    pass
+    REFRESH_TOKENS_DB[user_id] = refresh_token
 
 def delete_refresh_token(user_id: int):
-    pass
+    if user_id in REFRESH_TOKENS_DB.keys():
+        del REFRESH_TOKENS_DB[user_id]
