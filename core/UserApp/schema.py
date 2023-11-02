@@ -27,7 +27,10 @@ class Tokens(BaseModel):
 class User(BaseModel):
     id: int
     username: str
+    hashed_password: str
     email: str
+    message: str
+    image_url: str
 
 class PasswordUpdate(BaseModel):
     prev_password: str

@@ -11,6 +11,7 @@ from pymysql.cursors import Cursor
 
 import core.UserApp.crud as user_crud
 import core.UserApp.schema as user_schema
+from core.UserApp.schema import User
 
 router = APIRouter(
     prefix="/api/user",
@@ -21,6 +22,22 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login")
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 SECRET_KEY = "4ab2fce7a6bd79e1c014396315ed322dd6edb1c5d975c6b74a2904135172c03c" # tmp
 ALGORITHM = "HS256"
+
+
+def get_current_user(access_token: str = Depends(oauth2_scheme),
+                     db: Cursor = Depends(get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        db_user = user_crud.get_user_by_token(db=db, token=access_token)
+        if db_user is None:
+            raise credentials_exception
+        return db_user
+    except JWTError:
+        raise credentials_exception
 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
@@ -55,43 +72,34 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(),
     }
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-def logout(access_token: str = Depends(oauth2_scheme)):
-    db_user = user_crud.get_user_by_token(token=access_token)
-    if not db_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    user_crud.delete_refresh_token(user_id=db_user['id'])
+def logout(current_user: User = Depends(get_current_user)):
+    user_crud.delete_refresh_token(user_id=current_user['id'])
 
 @router.post("/update/password", status_code=status.HTTP_201_CREATED)
 def update_password(password_update=user_schema.PasswordUpdate,
-                    access_token: str = Depends(oauth2_scheme),
-                    db: Cursor = Depends(get_db)):
-    db_user = user_crud.get_user_by_token(db=db, token=access_token)
-    if (not db_user) or (not user_crud.pwd_context.verify(password_update.prev_password, db_user['password'])):
+                    db: Cursor = Depends(get_db),
+                    current_user: User = Depends(get_current_user)):
+    if not user_crud.pwd_context.verify(password_update.prev_password, current_user['password']):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    user_crud.update_password(db=db, user_id=db_user['id'], password=password_update.new_password)
+    user_crud.update_password(db=db, user_id=current_user['id'], password=password_update.new_password)
 
 @router.post("/delete", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(cur_password: str,
                 access_token: str = Depends(oauth2_scheme),
-                db: Cursor = Depends(get_db)):
-    db_user = user_crud.get_user_by_token(db=db, token=access_token)
-    if (not db_user) or (not user_crud.pwd_context.verify(cur_password, db_user['password'])):
+                db: Cursor = Depends(get_db),
+                current_user: User = Depends(get_current_user)):
+    if not user_crud.pwd_context.verify(cur_password, current_user['password']):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    user_crud.delete_user(db=db, user_id=db_user['id'])
+    user_crud.delete_user(db=db, user_id=current_user['id'])
 
 @router.post("/update/refresh", response_model=user_schema.Tokens)
 def update_refresh_token(refresh_token: str = Depends(oauth2_scheme),
@@ -106,21 +114,6 @@ def update_refresh_token(refresh_token: str = Depends(oauth2_scheme),
             "token_type": "bearer",
             "username": db_user['username']
         }
-
-def get_current_user(access_token: str = Depends(oauth2_scheme),
-                     db: Cursor = Depends(get_db)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        db_user = user_crud.get_user_by_token(db=db, token=access_token)
-        if db_user is None:
-            raise credentials_exception
-        return db_user
-    except JWTError:
-        raise credentials_exception
     
 """
 TODO
