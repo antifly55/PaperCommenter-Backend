@@ -5,6 +5,7 @@ from pydantic import BaseModel
 class Comment(BaseModel):
     username: str
     content: str
+    hashed_identifier: str
 
     create_datetime: datetime.datetime
     modify_datetime: datetime.datetime | None = None

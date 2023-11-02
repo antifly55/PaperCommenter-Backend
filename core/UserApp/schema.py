@@ -34,10 +34,10 @@ class User(BaseModel):
 
 class PasswordUpdate(BaseModel):
     prev_password: str
-    new_password: str
+    new_password1: str
     new_password2: str
 
-    @validator('prev_password', 'new_password', 'new_password2')
+    @validator('prev_password', 'new_password1', 'new_password2')
     def not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')

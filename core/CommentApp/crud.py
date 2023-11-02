@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import hashlib
+
 from pymysql.cursors import Cursor
 
 
@@ -24,10 +26,11 @@ def get_comment_list(db: Cursor, paper_id: int, skip: int = 0, limit: int = 10):
 def create_comment(db: Cursor, paper_id: int, user_id: int, username: str, content: str):
 
     now = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    hashed_identifier = hashlib.md5(f"{content}-{user_id}-{username}-{now}".encode()).hexdigest()
 
     # Auto Increment ID
     comment_info = "(paper_id, user_id, hashed_identifier, username, content, create_datetime, like_count)"
-    comment_values = f"({paper_id}, {user_id}, '{username}', '{content}', '{now}', 0)"
+    comment_values = f"({paper_id}, {user_id}, '{hashed_identifier}', '{username}', '{content}', '{now}', 0)"
 
     db.execute(f"INSERT INTO comment {comment_info} VALUES {comment_values}")
     db.connection.commit()

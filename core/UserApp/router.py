@@ -54,7 +54,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(),
 
     # check user and password
     db_user = user_crud.get_user_by_username(db=db, username=form_data.username)
-    if (not db_user) or (not user_crud.pwd_context.verify(form_data.password, db_user['password'])):
+    if (not db_user) or (not user_crud.pwd_context.verify(form_data.password, db_user['hashed_password'])):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -62,7 +62,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(),
         )
 
     access_token, refresh_token = user_crud.make_tokens(user=db_user)
-    user_crud.update_refresh_token(id=db_user['id'], refresh_token=refresh_token)
+    user_crud.update_refresh_token(user_id=db_user['id'], refresh_token=refresh_token)
 
     return {
         "access_token": access_token,
@@ -76,24 +76,23 @@ def logout(current_user: User = Depends(get_current_user)):
     user_crud.delete_refresh_token(user_id=current_user['id'])
 
 @router.post("/update/password", status_code=status.HTTP_201_CREATED)
-def update_password(password_update=user_schema.PasswordUpdate,
+def update_password(password_update: user_schema.PasswordUpdate,
                     db: Cursor = Depends(get_db),
                     current_user: User = Depends(get_current_user)):
-    if not user_crud.pwd_context.verify(password_update.prev_password, current_user['password']):
+    if not user_crud.pwd_context.verify(password_update.prev_password, current_user['hashed_password']):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    user_crud.update_password(db=db, user_id=current_user['id'], password=password_update.new_password)
+    user_crud.update_password(db=db, user_id=current_user['id'], password=password_update.new_password1)
 
 @router.post("/delete", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(cur_password: str,
-                access_token: str = Depends(oauth2_scheme),
                 db: Cursor = Depends(get_db),
                 current_user: User = Depends(get_current_user)):
-    if not user_crud.pwd_context.verify(cur_password, current_user['password']):
+    if not user_crud.pwd_context.verify(cur_password, current_user['hashed_password']):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",

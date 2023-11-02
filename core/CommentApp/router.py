@@ -44,7 +44,7 @@ def create_comment(slug: str, content: str, db: Cursor = Depends(get_db), curren
 
     # redirect
     from core.PaperApp.router import router as paper_router
-    url = paper_router.url_path_for('get_paper_detail', paper_id=db_paper['id'])
+    url = paper_router.url_path_for('get_paper_detail', slug=db_paper['slug'])
     return RedirectResponse(url, status_code=303)
 
 @router.put("/update", status_code=status.HTTP_201_CREATED)

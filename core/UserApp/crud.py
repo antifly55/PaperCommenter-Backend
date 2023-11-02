@@ -41,7 +41,7 @@ def make_tokens(user: User):
 
 
 def get_user_by_username(db: Cursor, username: str):
-    db.execute(f"SELECT * FROM user WHERE username={username}")
+    db.execute(f"SELECT * FROM user WHERE username='{username}'")
     user = db.fetchone()
 
     return user
@@ -54,9 +54,9 @@ def create_user(db: Cursor, user_create: UserCreate):
 
     # Auto Incrementl ID
     user_info = "(username, hashed_password, email, message, image_url)"
-    user_values = f"({user_create.username}, {pwd_context.hash(user_create.password1)}, {user_create.email}, 'default', 'default')"
+    user_values = f"('{user_create.username}', '{pwd_context.hash(user_create.password1)}', '{user_create.email}', 'default', 'default')"
 
-    db.execute(f"INSERT INTO user {user_info} VALUES {user_values}")
+    db.execute(f"INSERT INTO user{user_info} VALUES {user_values}")
     db.connection.commit()
 
 def delete_user(db: Cursor, user_id: int):
