@@ -26,8 +26,9 @@ def create_paper(db: Cursor, paper_create: PaperCreate, user_id: int):
     now = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
 
     # Auto Increment ID
-    paper_info = "(user_id, slug, title, authors, publish_year, publisher, site_url, paper_url, create_datetime, modify_datetime, like_count, comment_count)"
-    paper_values = f"({user_id}, {paper_create.slug, paper_create.title, paper_create.authors, paper_create.publish_year, paper_create.publisher, paper_create.site_url, paper_create.paper_url, now, None, 0, 0})"
+    paper_info = "(user_id, slug, title, authors, publish_year, publisher, site_url, paper_url, create_datetime, like_count, comment_count)"
+    paper_values = f"({user_id}, '{paper_create.slug}', '{paper_create.title}', '{paper_create.authors}', {paper_create.publish_year}, '{paper_create.publisher}', \
+        '{paper_create.site_url}', '{paper_create.paper_url}', '{now}', 0, 0)"
 
     db.execute(f"INSERT INTO paper {paper_info} VALUES {paper_values}")
     db.connection.commit()

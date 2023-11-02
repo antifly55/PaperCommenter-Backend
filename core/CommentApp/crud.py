@@ -3,8 +3,8 @@ from datetime import datetime
 from pymysql.cursors import Cursor
 
 
-def get_comment_by_uuid(db: Cursor, comment_uuid: int):
-    db.execute(f"SELECT * FROM comment WHERE uuid={comment_uuid}")
+def get_comment_by_hashed_identifier(db: Cursor, hashed_identifier: int):
+    db.execute(f"SELECT * FROM comment WHERE hashed_identifier={hashed_identifier}")
     comment = db.fetchone()
 
     return comment
@@ -21,9 +21,15 @@ def get_comment_list(db: Cursor, paper_id: int, skip: int = 0, limit: int = 10):
 
     return total, comment_list
 
-def create_comment(db: Cursor, paper_id: int, content: str):
+def create_comment(db: Cursor, paper_id: int, user_id: int, username: str, content: str):
+
     now = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-    db.execute(f"INSERT INTO comment (id, paper_id, user_id, uuid, username, content, create_datetime, like_count) VALUES (1, 1, 1, 'string', 'string', '{now}', 0);")
+
+    # Auto Increment ID
+    comment_info = "(paper_id, user_id, hashed_identifier, username, content, create_datetime, like_count)"
+    comment_values = f"({paper_id}, {user_id}, '{username}', '{content}', '{now}', 0)"
+
+    db.execute(f"INSERT INTO comment {comment_info} VALUES {comment_values}")
     db.connection.commit()
 
 def update_comment(db: Cursor, comment_id: int, content: str):
