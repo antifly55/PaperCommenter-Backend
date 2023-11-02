@@ -7,6 +7,9 @@ from pymysql.cursors import Cursor
 import core.PaperApp.schema as paper_schema
 import core.PaperApp.crud as paper_crud
 
+from core.UserApp.schema import User
+from core.UserApp.router import get_current_user
+
 router = APIRouter(
     prefix="/api/paper",
 )
@@ -25,20 +28,19 @@ def get_paper_detail(slug: str, db: Cursor = Depends(get_db)):
     return db_paper
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-def create_paper(paper_create: paper_schema.PaperCreate, db: Cursor = Depends(get_db)):
-    paper_crud.create_paper(db=db, paper_create=paper_create)
+def create_paper(paper_create: paper_schema.PaperCreate, db: Cursor = Depends(get_db), current_user: User = Depends(get_current_user)):
+    paper_crud.create_paper(db=db, paper_create=paper_create, user_id=current_user['id'])
 
 @router.delete("/delete", status_code=status.HTTP_204_NO_CONTENT)
-def delete_paper(slug: str, db: Cursor = Depends(get_db)):
+def delete_paper(slug: str, db: Cursor = Depends(get_db), current_user: User = Depends(get_current_user)):
     db_paper = paper_crud.get_paper_by_slug(db=db, slug=slug)
-    if not db_paper:
+    if (not db_paper) or (db_paper['user_id'] != current_user['id']):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="데이터를 찾을수 없습니다.")
     paper_crud.delete_paper(db=db, paper_id=db_paper['id'])
 
 """
 TODO
-- access token 검증 기능 추가
 - create_paper에서 구글 스칼라 기반 파싱 기능 구현
 - update_paper 기능 구현
 - like_paper 기능 구현

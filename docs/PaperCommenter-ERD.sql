@@ -18,6 +18,7 @@ CREATE TABLE `COMMENT` (
 	`id`	int	NOT NULL,
 	`paper_id`	int	NOT NULL,
 	`user_id`	int	NOT NULL,
+	`hashed_identifier`	varchar(255)	NOT NULL,
 	`username`	nvarchar(255)	NOT NULL,
 	`content`	nvarchar(10000)	NOT NULL,
 	`create_datetime`	datetime	NOT NULL,
