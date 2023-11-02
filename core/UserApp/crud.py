@@ -51,7 +51,12 @@ def get_user_by_token(db: Cursor, token: str):
     return get_user_by_username(db=db, username=user_info['username'])
 
 def create_user(db: Cursor, user_create: UserCreate):
-    db.execute(f"INSERT INTO user (id, username, hashed_password, email, message, image_url) VALUES (1, {user_create.username}, {pwd_context.hash(user_create.password1)}, {user_create.email}, 'default', 'default');")
+
+    # Auto Incrementl ID
+    user_info = "(username, hashed_password, email, message, image_url)"
+    user_values = f"({user_create.username}, {pwd_context.hash(user_create.password1)}, {user_create.email}, 'default', 'default')"
+
+    db.execute(f"INSERT INTO user {user_info} VALUES {user_values}")
     db.connection.commit()
 
 def delete_user(db: Cursor, user_id: int):
