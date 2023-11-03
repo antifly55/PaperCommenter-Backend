@@ -1,8 +1,8 @@
 ﻿CREATE TABLE `PAPER` (
 	`id`	int	NOT NULL	AUTO_INCREMENT PRIMARY KEY,
 	`user_id`	int	NOT NULL,
-	`slug`	nvarchar(255)	NOT NULL,
-	`title`	nvarchar(255)	NOT NULL,
+	`slug`	nvarchar(255)	NOT NULL	UNIQUE KEY,
+	`title`	nvarchar(255)	NOT NULL	UNIQUE KEY,
 	`authors`	nvarchar(255)	NOT NULL,
 	`publish_year`	smallint	NOT NULL,
 	`publisher`	nvarchar(255)	NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE `COMMENT` (
 	`id`	int	NOT NULL	AUTO_INCREMENT	PRIMARY KEY,
 	`paper_id`	int	NOT NULL,
 	`user_id`	int	NOT NULL,
-	`hashed_identifier`	varchar(255)	NOT NULL,
+	`hashed_identifier`	varchar(255)	NOT NULL	UNIQUE KEY,
 	`username`	nvarchar(255)	NOT NULL,
 	`content`	nvarchar(10000)	NOT NULL,
 	`create_datetime`	datetime	NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE `COMMENT` (
 
 CREATE TABLE `USER` (
 	`id`	int	NOT NULL	AUTO_INCREMENT	PRIMARY KEY,
-	`username`	nvarchar(255)	NOT NULL,
+	`username`	nvarchar(255)	NOT NULL	UNIQUE KEY,
 	`hashed_password`	varchar(255)	NOT NULL,
 	`email`	nvarchar(255)	NOT NULL,
 	`message`	nvarchar(255)	NOT NULL,
@@ -37,12 +37,14 @@ CREATE TABLE `USER` (
 
 CREATE TABLE `PAPER_LIKE` (
 	`paper_id`	int	NOT NULL,
-	`user_id`	int	NOT NULL
+	`user_id`	int	NOT NULL,
+	UNIQUE KEY	combination (`paper_id`, `user_id`)
 );
 
 CREATE TABLE `COMMENT_LIKE` (
 	`comment_id`	int	NOT NULL,
-	`user_id`	int	NOT NULL
+	`user_id`	int	NOT NULL,
+	UNIQUE KEY	combination (`comment_id`, `user_id`)
 );
 
 ALTER TABLE `PAPER` ADD CONSTRAINT `FK_USER_TO_PAPER_1` FOREIGN KEY (
