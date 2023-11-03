@@ -72,7 +72,7 @@ def withdraw_like_paper(slug: str,
                             detail="데이터를 찾을수 없습니다.")
 
     db_paper_like = paper_crud.get_paper_like(db=db, paper_id=db_paper['id'], user_id=current_user['id'])
-    if db_paper_like:
+    if not db_paper_like:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="데이터를 찾을수 없습니다.")
     
