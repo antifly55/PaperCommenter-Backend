@@ -41,3 +41,21 @@ def delete_paper(db: Cursor,
                  paper_id: int):
     db.execute(f"DELETE FROM paper WHERE id={paper_id}")
     db.connection.commit()
+
+def get_paper_like(db: Cursor,
+                   paper_id: int,
+                   user_id: int):
+    db.execute(f"SELECT * FROM paper_like WHERE paper_id={paper_id} and user_id={user_id}")
+    paper_like = db.fetchone()
+
+    return paper_like
+
+def like_paper(db: Cursor,
+               paper_id: int,
+               user_id: int):
+    db.execute(f"INSERT INTO paper_like (paper_id, user_id) VALUES ({paper_id}, {user_id})")
+
+def withdraw_like_paper(db: Cursor,
+                        paper_id: int,
+                        user_id: int):
+    db.execute(f"DELETE FROM paper_like WHERE paper_id={paper_id} and user_id={user_id}")
