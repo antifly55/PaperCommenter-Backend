@@ -67,15 +67,47 @@ def delete_comment(prev_hashed_identifier: str,
                    db: Cursor = Depends(get_db),
                    current_user: User = Depends(get_current_user)):
 
-    db_comment = comment_crud.get_comment_by_hashed_identifier(db=db, prev_hashed_identifier=prev_hashed_identifier)
+    db_comment = comment_crud.get_comment_by_hashed_identifier(db=db, hashed_identifier=prev_hashed_identifier)
     if (not db_comment) or (db_comment['user_id'] != current_user['id']):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="데이터를 찾을수 없습니다.")
     comment_crud.delete_comment(db=db, comment_id=db_comment['id'])
 
+@router.delete("/like", status_code=status.HTTP_201_CREATED)
+def like_comment(hashed_identifier: str,
+               db: Cursor = Depends(get_db),
+               current_user: User = Depends(get_current_user)):
+    
+    db_comment = comment_crud.get_comment_by_hashed_identifier(db=db, hashed_identifier=hashed_identifier)
+    if not db_comment:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="데이터를 찾을수 없습니다.")
+
+    db_comment_like = comment_crud.get_comment_like(db=db, comment_id=db_comment['id'], user_id=current_user['id'])
+    if db_comment_like:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="데이터가 이미 존재합니다.")
+    
+    comment_crud.like_comment(db=db, comment_id=db_comment['id'], user_id=current_user['id'])
+
+@router.delete("/withdraw-like", status_code=status.HTTP_204_NO_CONTENT)
+def withdraw_like_comment(hashed_identifier: str,
+               db: Cursor = Depends(get_db),
+               current_user: User = Depends(get_current_user)):
+    
+    db_comment = comment_crud.get_comment_by_hashed_identifier(db=db, hashed_identifier=hashed_identifier)
+    if not db_comment:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="데이터를 찾을수 없습니다.")
+
+    db_comment_like = comment_crud.get_comment_like(db=db, comment_id=db_comment['id'], user_id=current_user['id'])
+    if not db_comment_like:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="데이터를 찾을수 없습니다.")
+    
+    comment_crud.withdraw_like_comment(db=db, comment_id=db_comment['id'], user_id=current_user['id'])
+
 """
 TODO
-- like_comment 기능 구현
-- withdraw_like_comment 기능 구현
 - 상태 코드 및 API 명세서 정리
 """

@@ -62,3 +62,21 @@ def delete_comment(db: Cursor,
                    comment_id: int):
     db.execute(f"DELETE FROM comment WHERE id={comment_id}")
     db.connection.commit()
+
+def get_comment_like(db: Cursor,
+                   comment_id: int,
+                   user_id: int):
+    db.execute(f"SELECT * FROM comment_like WHERE comment_id={comment_id} and user_id={user_id}")
+    paper_like = db.fetchone()
+
+    return paper_like
+
+def like_comment(db: Cursor,
+               comment_id: int,
+               user_id: int):
+    db.execute(f"INSERT INTO comment_like (comment_id, user_id) VALUES ({comment_id}, {user_id})")
+
+def withdraw_like_comment(db: Cursor,
+                        comment_id: int,
+                        user_id: int):
+    db.execute(f"DELETE FROM comment_like WHERE comment_id={comment_id} and user_id={user_id}")
