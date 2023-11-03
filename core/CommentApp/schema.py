@@ -15,3 +15,16 @@ class Comment(BaseModel):
 class CommentList(BaseModel):
     total: int = 0
     comment_list: list[Comment] = []
+
+class CommentRead(BaseModel):
+    slug: str
+    page: int = 0
+    size: int = 10
+
+class CommentCreate(BaseModel):
+    slug: str
+    content: str
+
+class CommentUpdate(BaseModel):
+    prev_hashed_identifier: str
+    new_content: str
