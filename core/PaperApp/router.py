@@ -15,7 +15,9 @@ router = APIRouter(
 )
 
 @router.get("/list", response_model=paper_schema.PaperList)
-def get_paper_list(page: int = 0, size: int = 10, db: Cursor = Depends(get_db)):
+def get_paper_list(page: int = 0,
+                   size: int = 10,
+                   db: Cursor = Depends(get_db)):
     total, paper_list = paper_crud.get_paper_list(db=db, skip=page*size, limit=size)
     return {
         'total': total,
@@ -23,16 +25,21 @@ def get_paper_list(page: int = 0, size: int = 10, db: Cursor = Depends(get_db)):
     }
 
 @router.get("/detail/{slug}", response_model=paper_schema.Paper)
-def get_paper_detail(slug: str, db: Cursor = Depends(get_db)):
+def get_paper_detail(slug: str,
+                     db: Cursor = Depends(get_db)):
     db_paper = paper_crud.get_paper_by_slug(db=db, slug=slug)
     return db_paper
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-def create_paper(paper_create: paper_schema.PaperCreate, db: Cursor = Depends(get_db), current_user: User = Depends(get_current_user)):
+def create_paper(paper_create: paper_schema.PaperCreate,
+                 db: Cursor = Depends(get_db),
+                 current_user: User = Depends(get_current_user)):
     paper_crud.create_paper(db=db, paper_create=paper_create, user_id=current_user['id'])
 
 @router.delete("/delete", status_code=status.HTTP_204_NO_CONTENT)
-def delete_paper(slug: str, db: Cursor = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_paper(slug: str,
+                 db: Cursor = Depends(get_db),
+                 current_user: User = Depends(get_current_user)):
     db_paper = paper_crud.get_paper_by_slug(db=db, slug=slug)
     if (not db_paper) or (db_paper['user_id'] != current_user['id']):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
