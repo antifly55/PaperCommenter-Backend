@@ -41,7 +41,8 @@ def get_current_user(access_token: str = Depends(oauth2_scheme),
 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
-def create_user(user_create: user_schema.UserCreate, db: Cursor = Depends(get_db)):
+def create_user(user_create: user_schema.UserCreate,
+                db: Cursor = Depends(get_db)):
     db_user = user_crud.get_user_by_username(db=db, username=user_create.username)
     if db_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
