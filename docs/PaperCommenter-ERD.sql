@@ -122,6 +122,14 @@ REFERENCES `USER` (
 	`id`
 );
 
+
+CREATE INDEX `PAPER_IDX_HASHED_SLUG` ON `PAPER` (`hashed_slug`);
+
+CREATE INDEX `COMMENT_IDX_HASHED_IDENTIFIER` ON `COMMENT` (`hashed_identifier`); 
+
+CREATE INDEX `USER_IDX_HASHED_USERNAME` ON `USER` (`hashed_username`); 
+
+
 SET GLOBAL event_scheduler = ON;
 
 CREATE EVENT IF NOT EXISTS `PaperLikeCountUpdate`
