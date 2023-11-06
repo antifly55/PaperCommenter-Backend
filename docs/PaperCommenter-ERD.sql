@@ -13,6 +13,7 @@
 	`modify_datetime`	datetime	NULL,
 	`like_count`	int	NOT NULL,
 	`comment_count`	int	NOT NULL,
+	'rating_count'	int	NOT NULL,
 	'rating_average'	float	NOT NULL
 );
 
@@ -145,6 +146,30 @@ CREATE EVENT IF NOT EXISTS `PaperCommentCountUpdate`
 	INNER JOIN (SELECT paper_id, count(*) as cnt FROM comment GROUP BY paper_id) as B
 	ON B.paper_id=A.id
 	SET A.comment_count=B.cnt
+	WHERE B.paper_id=A.id;
+
+CREATE EVENT IF NOT EXISTS `PaperRatingCountUpdate`
+    ON SCHEDULE
+        EVERY 1 MINUTE STARTS NOW()
+    ON COMPLETION NOT PRESERVE
+    ENABLE
+    DO
+    UPDATE paper as A
+	INNER JOIN (SELECT paper_id, count(*) as cnt FROM paper_rating GROUP BY paper_id) as B
+	ON B.paper_id=A.id
+	SET A.rating_count=B.cnt
+	WHERE B.paper_id=A.id;
+
+CREATE EVENT IF NOT EXISTS `PaperRatingAverageUpdate`
+    ON SCHEDULE
+        EVERY 1 MINUTE STARTS NOW()
+    ON COMPLETION NOT PRESERVE
+    ENABLE
+    DO
+    UPDATE paper as A
+	INNER JOIN (SELECT paper_id, avg(rating) as average FROM paper_rating GROUP BY paper_id) as B
+	ON B.paper_id=A.id
+	SET A.rating_average=B.average
 	WHERE B.paper_id=A.id;
 
 CREATE EVENT IF NOT EXISTS `CommentLikeCountUpdate`
