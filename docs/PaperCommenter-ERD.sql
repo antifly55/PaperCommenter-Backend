@@ -13,8 +13,8 @@
 	`modify_datetime`	datetime	NULL,
 	`like_count`	int	NOT NULL,
 	`comment_count`	int	NOT NULL,
-	'rating_count'	int	NOT NULL,
-	'rating_average'	float	NOT NULL
+	`rating_count`	int	NOT NULL,
+	`rating_average`	float	NOT NULL
 );
 
 CREATE TABLE `COMMENT` (
@@ -175,7 +175,7 @@ CREATE EVENT IF NOT EXISTS `PaperRatingAverageUpdate`
     ENABLE
     DO
     UPDATE paper as A
-	INNER JOIN (SELECT paper_id, avg(rating) as average FROM paper_rating GROUP BY paper_id) as B
+	INNER JOIN (SELECT paper_id, IF(count(paper_id)=0, 0, avg(rating)) as average FROM paper_rating GROUP BY paper_id) as B
 	ON B.paper_id=A.id
 	SET A.rating_average=B.average
 	WHERE B.paper_id=A.id;
@@ -191,3 +191,6 @@ CREATE EVENT IF NOT EXISTS `CommentLikeCountUpdate`
 	ON B.comment_id=A.id
 	SET A.like_count=B.cnt
 	WHERE B.comment_id=A.id;
+
+-- drop index: username, slug, title
+-- 우선 각종 id나 unique 제약 조건을 위한 index는 모두 유지
