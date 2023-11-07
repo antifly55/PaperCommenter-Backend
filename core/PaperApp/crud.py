@@ -54,8 +54,24 @@ def like_paper(db: Cursor,
                paper_id: int,
                user_id: int):
     db.execute(f"INSERT INTO paper_like (paper_id, user_id) VALUES ({paper_id}, {user_id})")
+    db.connection.commit()
 
 def withdraw_like_paper(db: Cursor,
                         paper_id: int,
                         user_id: int):
     db.execute(f"DELETE FROM paper_like WHERE paper_id={paper_id} and user_id={user_id}")
+    db.connection.commit()
+
+def rating_paper(db: Cursor,
+                 paper_id: int,
+                 user_id: int,
+                 rating: int):
+    rating = min(max(rating, 1), 5)
+    db.execute(f"INSERT INTO paper_rating (paper_id, user_id, rating) VALUES ({paper_id}, {user_id}, {rating})")
+    db.connection.commit()
+
+def withdraw_rating_paper(db: Cursor,
+                          paper_id: int,
+                          user_id: int):
+    db.execute(f"DELETE FROM paper_rating WHERE paper_id={paper_id} and user_id={user_id}")
+    db.connection.commit()
