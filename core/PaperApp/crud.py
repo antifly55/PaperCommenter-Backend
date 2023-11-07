@@ -62,6 +62,14 @@ def withdraw_like_paper(db: Cursor,
     db.execute(f"DELETE FROM paper_like WHERE paper_id={paper_id} and user_id={user_id}")
     db.connection.commit()
 
+def get_paper_rating(db: Cursor,
+                     paper_id: int,
+                     user_id: int):
+    db.execute(f"SELECT * FROM paper_rating WHERE paper_id={paper_id} and user_id={user_id}")
+    paper_rating = db.fetchone()
+
+    return paper_rating
+
 def rating_paper(db: Cursor,
                  paper_id: int,
                  user_id: int,
