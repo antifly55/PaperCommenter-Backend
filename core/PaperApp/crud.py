@@ -83,3 +83,10 @@ def withdraw_rating_paper(db: Cursor,
                           user_id: int):
     db.execute(f"DELETE FROM paper_rating WHERE paper_id={paper_id} and user_id={user_id}")
     db.connection.commit()
+
+def update_rating_paper(db: Cursor,
+                        paper_id: int,
+                        user_id: int,
+                        rating: int):
+    db.execute(f"UPDATE paper_rating SET rating={rating} WHERE paper_id={paper_id} and user_id={user_id}")
+    db.connection.commit()

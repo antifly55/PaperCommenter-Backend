@@ -78,6 +78,38 @@ def withdraw_like_paper(slug: str,
     
     paper_crud.withdraw_like_paper(db=db, paper_id=db_paper['id'], user_id=current_user['id'])
 
+@router.delete("/rating", status_code=status.HTTP_201_CREATED)
+def rating_paper(slug: str,
+                 rating: int,
+                 db: Cursor = Depends(get_db),
+                 current_user: User = Depends(get_current_user)):
+    db_paper = paper_crud.get_paper_by_slug(db=db, slug=slug)
+    if not db_paper:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="데이터를 찾을수 없습니다.")
+
+    db_paper_rating = paper_crud.get_paper_rating(db=db, paper_id=db_paper['id'], user_id=current_user['id'])
+    if db_paper_rating:
+        paper_crud.update_rating_paper(db=db, paper_id=db_paper['id'], user_id=current_user['id'], rating=rating)
+    else:
+        paper_crud.rating_paper(db=db, paper_id=db_paper['id'], user_id=current_user['id'], rating=rating)
+
+@router.delete("/withdraw-rating", status_code=status.HTTP_204_NO_CONTENT)
+def withdraw_rating_paper(slug: str,
+                          db: Cursor = Depends(get_db),
+                          current_user: User = Depends(get_current_user)):
+    db_paper = paper_crud.get_paper_by_slug(db=db, slug=slug)
+    if not db_paper:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="데이터를 찾을수 없습니다.")
+
+    db_paper_rating = paper_crud.get_paper_rating(db=db, paper_id=db_paper['id'], user_id=current_user['id'])
+    if not db_paper_rating:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="데이터를 찾을수 없습니다.")
+    
+    paper_crud.withdraw_rating_paper(db=db, paper_id=db_paper['id'], user_id=current_user['id'])
+
 """
 TODO
 - create_paper에서 구글 스칼라 기반 파싱 기능 구현
