@@ -10,14 +10,17 @@ import core.PaperApp.crud as paper_crud
 from core.UserApp.schema import User
 from core.UserApp.router import get_current_user
 
+
 router = APIRouter(
     prefix="/api/paper",
 )
+
 
 @router.get("/list", response_model=paper_schema.PaperList)
 def get_paper_list(page: int = 0,
                    size: int = 10,
                    db: Cursor = Depends(get_db)):
+    
     total, paper_list = paper_crud.get_paper_list(db=db, skip=page*size, limit=size)
     return {
         'total': total,
@@ -27,7 +30,11 @@ def get_paper_list(page: int = 0,
 @router.get("/detail/{slug}", response_model=paper_schema.Paper)
 def get_paper_detail(slug: str,
                      db: Cursor = Depends(get_db)):
+    
     db_paper = paper_crud.get_paper_by_slug(db=db, slug=slug)
+    if not db_paper:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="데이터를 찾을수 없습니다.")
     return db_paper
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
