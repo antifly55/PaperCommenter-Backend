@@ -1,7 +1,7 @@
 ﻿CREATE TABLE `PAPER` (
-	`id`	int	NOT NULL	AUTO_INCREMENT PRIMARY KEY,
-	`user_id`	int	NOT NULL,
-	`hashed_slug`	int	NOT NULL,
+	`id`	int	UNSIGNED	NOT NULL	AUTO_INCREMENT PRIMARY KEY,
+	`user_id`	int	UNSIGNED	NOT NULL,
+	`hashed_slug`	int	UNSIGNED	NOT NULL,
 	`slug`	nvarchar(255)	NOT NULL	UNIQUE KEY,
 	`title`	nvarchar(255)	NOT NULL	UNIQUE KEY,
 	`authors`	nvarchar(255)	NOT NULL,
@@ -11,28 +11,28 @@
 	`paper_url`	nvarchar(10000)	NOT NULL,
 	`create_datetime`	datetime	NOT NULL,
 	`modify_datetime`	datetime	NULL,
-	`like_count`	int	NOT NULL,
-	`comment_count`	int	NOT NULL,
-	`rating_count`	int	NOT NULL,
+	`like_count`	int	UNSIGNED	NOT NULL,
+	`comment_count`	int	UNSIGNED	NOT NULL,
+	`rating_count`	int	UNSIGNED	NOT NULL,
 	`rating_average`	float	NOT NULL
 );
 
 CREATE TABLE `COMMENT` (
-	`id`	int	NOT NULL	AUTO_INCREMENT	PRIMARY KEY,
-	`paper_id`	int	NOT NULL,
-	`user_id`	int	NOT NULL,
-	`hashed_identifier`	int	NOT NULL,
+	`id`	int	UNSIGNED	NOT NULL	AUTO_INCREMENT	PRIMARY KEY,
+	`paper_id`	int	UNSIGNED	NOT NULL,
+	`user_id`	int	UNSIGNED	NOT NULL,
+	`hashed_identifier`	int	UNSIGNED	NOT NULL,
 	`username`	nvarchar(255)	NOT NULL,
 	`content`	nvarchar(10000)	NOT NULL,
 	`create_datetime`	datetime	NOT NULL,
 	`modify_datetime`	datetime	NULL,
-	`like_count`	int	NOT NULL,
+	`like_count`	int	UNSIGNED	NOT NULL,
 	UNIQUE KEY	combination (`user_id`, `create_datetime`)
 );
 
 CREATE TABLE `USER` (
-	`id`	int	NOT NULL	AUTO_INCREMENT	PRIMARY KEY,
-	`hashed_username`	int	NOT NULL,
+	`id`	int	UNSIGNED	NOT NULL	AUTO_INCREMENT	PRIMARY KEY,
+	`hashed_username`	int	UNSIGNED	NOT NULL,
 	`username`	nvarchar(255)	NOT NULL	UNIQUE KEY,
 	`hashed_password`	varchar(255)	NOT NULL,
 	`email`	nvarchar(255)	NOT NULL,
@@ -41,21 +41,21 @@ CREATE TABLE `USER` (
 );
 
 CREATE TABLE `PAPER_LIKE` (
-	`paper_id`	int	NOT NULL,
-	`user_id`	int	NOT NULL,
+	`paper_id`	int	UNSIGNED	NOT NULL,
+	`user_id`	int	UNSIGNED	NOT NULL,
 	UNIQUE KEY	combination (`paper_id`, `user_id`)
 );
 
 CREATE TABLE `PAPER_RATING` (
-	`paper_id`	int	NOT NULL,
-	`user_id`	int	NOT NULL,
+	`paper_id`	int	UNSIGNED	NOT NULL,
+	`user_id`	int	UNSIGNED	NOT NULL,
 	`rating`	int	NOT NULL,
 	UNIQUE KEY	combination (`paper_id`, `user_id`)
 );
 
 CREATE TABLE `COMMENT_LIKE` (
-	`comment_id`	int	NOT NULL,
-	`user_id`	int	NOT NULL,
+	`comment_id`	int	UNSIGNED	NOT NULL,
+	`user_id`	int	UNSIGNED	NOT NULL,
 	UNIQUE KEY	combination (`comment_id`, `user_id`)
 );
 
