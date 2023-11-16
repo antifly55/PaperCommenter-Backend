@@ -4,8 +4,6 @@ import hashlib
 
 from pymysql.cursors import Cursor
 
-import core.CommentApp.schema as comment_schema
-
 
 def make_hashed_identifier(identifier):
     return hashlib.md5(f"-".join(identifier).encode()).hexdigest()
@@ -18,11 +16,9 @@ def get_comment_by_hashed_identifier(db: Cursor,
     return comment
 
 def get_comment_list(db: Cursor,
-                     comment_read: comment_schema.comment_read,
-                     paper_id: int):
-    
-    skip = comment_read.page * comment_read.size
-    limit = comment_read.size
+                     paper_id: int,
+                     skip: int = 0,
+                     limit: int = 10):
 
     db.execute(f"SELECT * FROM comment WHERE paper_id={paper_id} ORDER BY id desc LIMIT {limit} OFFSET {skip}")
     _comment_list = db.fetchall()

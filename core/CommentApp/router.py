@@ -21,14 +21,16 @@ router = APIRouter(
 )
 
 @router.get("/list/{slug}", response_model=comment_schema.CommentList)
-def get_comment_list(comment_read: comment_schema.CommentRead,
+def get_comment_list(slug: str,
+                     page: int = 0,
+                     size: int = 10,
                      db: Cursor = Depends(get_db)):
 
-    db_paper = paper_crud.get_paper_by_slug(db=db, slug=comment_read.slug)
+    db_paper = paper_crud.get_paper_by_slug(db=db, slug=slug)
     if not db_paper:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="paper not found")
 
-    total, comment_list = comment_crud.get_comment_list(db=db, comment_read=comment_read, paper_id=db_paper['id'])
+    total, comment_list = comment_crud.get_comment_list(db=db, paper_id=db_paper['id'], skip=page*size, limit=size)
     return {
         'total': total,
         'comment_list': comment_list
