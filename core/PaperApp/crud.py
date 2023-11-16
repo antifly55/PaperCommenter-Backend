@@ -9,6 +9,7 @@ from common.utils import hash_for_identification
 def get_paper_list(db: Cursor,
                    skip: int = 0,
                    limit: int = 10):
+    
     db.execute(f"SELECT * FROM paper ORDER BY id desc LIMIT {limit} OFFSET {skip}")
     _paper_list = db.fetchall()
 
@@ -23,6 +24,7 @@ def get_paper_by_slug(db: Cursor,
                       slug: str):
     
     hashed_slug = hash_for_identification(slug)
+
     db.execute(f"SELECT * FROM paper WHERE hashed_slug='{hashed_slug}' and slug='{slug}'")
     paper = db.fetchone()
 
@@ -87,6 +89,7 @@ def rating_paper(db: Cursor,
                  rating: int):
     
     rating = min(max(rating, 1), 5)
+    
     db.execute(f"INSERT INTO paper_rating (paper_id, user_id, rating) VALUES ({paper_id}, {user_id}, {rating})")
     db.connection.commit()
 
