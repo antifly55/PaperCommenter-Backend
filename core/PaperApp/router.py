@@ -22,6 +22,7 @@ def get_paper_list(page: int = 0,
                    db: Cursor = Depends(get_db)):
     
     total, paper_list = paper_crud.get_paper_list(db=db, skip=page*size, limit=size)
+
     return {
         'total': total,
         'paper_list': paper_list
@@ -35,28 +36,42 @@ def get_paper_detail(slug: str,
     if not db_paper:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="데이터를 찾을수 없습니다.")
+    
     return db_paper
 
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 def create_paper(paper_create: paper_schema.PaperCreate,
                  db: Cursor = Depends(get_db),
                  current_user: User = Depends(get_current_user)):
+    
+    db_paper = paper_crud.get_paper_by_slug(db=db, slug=paper_create.slug)
+    if db_paper:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail="인가된 사용자가 아닙니다.")
+
     paper_crud.create_paper(db=db, paper_create=paper_create, user_id=current_user['id'])
 
 @router.delete("/delete", status_code=status.HTTP_204_NO_CONTENT)
 def delete_paper(slug: str,
                  db: Cursor = Depends(get_db),
                  current_user: User = Depends(get_current_user)):
+    
     db_paper = paper_crud.get_paper_by_slug(db=db, slug=slug)
-    if (not db_paper) or (db_paper['user_id'] != current_user['id']):
+    if not db_paper:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="데이터를 찾을수 없습니다.")
+    
+    elif db_paper['user_id'] != current_user['id']:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="인가된 사용자가 아닙니다.")
+    
     paper_crud.delete_paper(db=db, paper_id=db_paper['id'])
 
 @router.delete("/like", status_code=status.HTTP_201_CREATED)
 def like_paper(slug: str,
                db: Cursor = Depends(get_db),
                current_user: User = Depends(get_current_user)):
+    
     db_paper = paper_crud.get_paper_by_slug(db=db, slug=slug)
     if not db_paper:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -64,7 +79,7 @@ def like_paper(slug: str,
 
     db_paper_like = paper_crud.get_paper_like(db=db, paper_id=db_paper['id'], user_id=current_user['id'])
     if db_paper_like:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="데이터가 이미 존재합니다.")
     
     paper_crud.like_paper(db=db, paper_id=db_paper['id'], user_id=current_user['id'])
@@ -73,6 +88,7 @@ def like_paper(slug: str,
 def withdraw_like_paper(slug: str,
                db: Cursor = Depends(get_db),
                current_user: User = Depends(get_current_user)):
+    
     db_paper = paper_crud.get_paper_by_slug(db=db, slug=slug)
     if not db_paper:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
@@ -90,12 +106,14 @@ def rating_paper(slug: str,
                  rating: int,
                  db: Cursor = Depends(get_db),
                  current_user: User = Depends(get_current_user)):
+    
     db_paper = paper_crud.get_paper_by_slug(db=db, slug=slug)
     if not db_paper:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="데이터를 찾을수 없습니다.")
 
     db_paper_rating = paper_crud.get_paper_rating(db=db, paper_id=db_paper['id'], user_id=current_user['id'])
+
     if db_paper_rating:
         paper_crud.update_rating_paper(db=db, paper_id=db_paper['id'], user_id=current_user['id'], rating=rating)
     else:
@@ -105,6 +123,7 @@ def rating_paper(slug: str,
 def withdraw_rating_paper(slug: str,
                           db: Cursor = Depends(get_db),
                           current_user: User = Depends(get_current_user)):
+    
     db_paper = paper_crud.get_paper_by_slug(db=db, slug=slug)
     if not db_paper:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
