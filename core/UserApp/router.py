@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+import configparser
 
 from fastapi import APIRouter, HTTPException
 from fastapi import Depends
@@ -13,24 +13,32 @@ import core.UserApp.crud as user_crud
 import core.UserApp.schema as user_schema
 from core.UserApp.schema import User
 
+
 router = APIRouter(
     prefix="/api/user",
 )
 
+properties = configparser.ConfigParser()
+properties.read('config.ini')
+
+properties_AUTH = properties['AUTH']
+
+ACCESS_TOKEN_EXPIRE_MINUTES = properties_AUTH['ACCESS_TOKEN_EXPIRE_MINUTES']
+SECRET_KEY = properties_AUTH['SECRET_KEY']
+ALGORITHM = properties_AUTH['ALGORITHM']
+
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login")
-
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
-SECRET_KEY = "4ab2fce7a6bd79e1c014396315ed322dd6edb1c5d975c6b74a2904135172c03c" # tmp
-ALGORITHM = "HS256"
-
 
 def get_current_user(access_token: str = Depends(oauth2_scheme),
                      db: Cursor = Depends(get_db)):
+    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="올바르지 않은 인증 정보입니다.",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
     try:
         db_user = user_crud.get_user_by_token(db=db, token=access_token)
         if db_user is None:
@@ -39,26 +47,26 @@ def get_current_user(access_token: str = Depends(oauth2_scheme),
     except JWTError:
         raise credentials_exception
 
-
 @router.post("/create", status_code=status.HTTP_201_CREATED)
 def create_user(user_create: user_schema.UserCreate,
                 db: Cursor = Depends(get_db)):
+    
     db_user = user_crud.get_user_by_username(db=db, username=user_create.username)
     if db_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail="이미 존재하는 사용자입니다.")
+    
     user_crud.create_user(db=db, user_create=user_create)
 
 @router.post("/login", response_model=user_schema.Tokens)
 def login(form_data: OAuth2PasswordRequestForm = Depends(),
           db: Cursor = Depends(get_db)):
 
-    # check user and password
     db_user = user_crud.get_user_by_username(db=db, username=form_data.username)
     if (not db_user) or (not user_crud.pwd_context.verify(form_data.password, db_user['hashed_password'])):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="유저명이나 비밀번호가 올바르지 않습니다.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -74,16 +82,18 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(),
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(current_user: User = Depends(get_current_user)):
+
     user_crud.delete_refresh_token(user_id=current_user['id'])
 
 @router.post("/update/password", status_code=status.HTTP_201_CREATED)
 def update_password(password_update: user_schema.PasswordUpdate,
                     db: Cursor = Depends(get_db),
                     current_user: User = Depends(get_current_user)):
+    
     if not user_crud.pwd_context.verify(password_update.prev_password, current_user['hashed_password']):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="비밀번호가 올바르지 않습니다.",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
@@ -93,17 +103,20 @@ def update_password(password_update: user_schema.PasswordUpdate,
 def delete_user(cur_password: str,
                 db: Cursor = Depends(get_db),
                 current_user: User = Depends(get_current_user)):
+    
     if not user_crud.pwd_context.verify(cur_password, current_user['hashed_password']):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="비밀번호가 올바르지 않습니다.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
     user_crud.delete_user(db=db, user_id=current_user['id'])
 
 @router.post("/update/refresh", response_model=user_schema.Tokens)
 def update_refresh_token(refresh_token: str = Depends(oauth2_scheme),
                          db: Cursor = Depends(get_db)):
+    
     db_user = user_crud.get_user_by_token(db=db, token=refresh_token)
     db_refresh_token = user_crud.get_refresh_token(user_id=db_user['id'])
     if refresh_token == db_refresh_token:
