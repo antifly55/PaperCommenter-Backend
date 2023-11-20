@@ -2,8 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from starlette.responses import RedirectResponse
 from starlette import status
 
-import hashlib
-
 from database import get_db
 from pymysql.cursors import Cursor
 
