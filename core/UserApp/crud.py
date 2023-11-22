@@ -1,7 +1,5 @@
 from datetime import timedelta, datetime
 
-import configparser
-
 from jose import jwt
 from passlib.context import CryptContext
 
@@ -9,16 +7,12 @@ from pymysql.cursors import Cursor
 
 from core.UserApp.schema import User, UserCreate
 
-properties = configparser.ConfigParser()
-properties.read('config.ini')
+from common.parse_env import get_config_variable
 
-properties_AUTH = properties['AUTH']
-
-ACCESS_TOKEN_EXPIRE_MINUTES = properties_AUTH['ACCESS_TOKEN_EXPIRE_MINUTES']
-REFRESH_TOKEN_EXPIRE_MINUTES = properties_AUTH['REFRESH_TOKEN_EXPIRE_MINUTES']
-SECRET_KEY = properties_AUTH['SECRET_KEY']
-ALGORITHM = properties_AUTH['ALGORITHM']
-
+ACCESS_TOKEN_EXPIRE_MINUTES = get_config_variable('AUTH', 'ACCESS_TOKEN_EXPIRE_MINUTES')
+REFRESH_TOKEN_EXPIRE_MINUTES = get_config_variable('AUTH', 'REFRESH_TOKEN_EXPIRE_MINUTES')
+SECRET_KEY = get_config_variable('AUTH', 'SECRET_KEY')
+ALGORITHM = get_config_variable('AUTH', 'ALGORITHM')
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

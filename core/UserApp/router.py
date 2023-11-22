@@ -1,5 +1,3 @@
-import configparser
-
 from fastapi import APIRouter, HTTPException
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
@@ -17,15 +15,6 @@ from core.UserApp.schema import User
 router = APIRouter(
     prefix="/api/user",
 )
-
-properties = configparser.ConfigParser()
-properties.read('config.ini')
-
-properties_AUTH = properties['AUTH']
-
-ACCESS_TOKEN_EXPIRE_MINUTES = properties_AUTH['ACCESS_TOKEN_EXPIRE_MINUTES']
-SECRET_KEY = properties_AUTH['SECRET_KEY']
-ALGORITHM = properties_AUTH['ALGORITHM']
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login")
