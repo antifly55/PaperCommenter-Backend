@@ -7,6 +7,7 @@ from pymysql.cursors import Cursor
 
 from core.UserApp.schema import User, UserCreate
 
+from common.utils import hash_for_identification
 from common.parse_env import get_config_variable
 
 ACCESS_TOKEN_EXPIRE_MINUTES = get_config_variable('AUTH', 'ACCESS_TOKEN_EXPIRE_MINUTES')
@@ -41,20 +42,25 @@ def make_tokens(user: User):
 
 def get_user_by_username(db: Cursor,
                          username: str):
-    db.execute(f"SELECT * FROM user WHERE username='{username}'")
+    
+    hashed_username = hash_for_identification(username)
+
+    db.execute(f"SELECT * FROM user WHERE hashed_username='{hashed_username}' and username='{username}'")
     user = db.fetchone()
 
     return user
 
 def get_user_by_token(db: Cursor,
                       token: str):
+    
     user_info = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
     return get_user_by_username(db=db, username=user_info['username'])
 
 def create_user(db: Cursor,
                 user_create: UserCreate):
 
-    # Auto Incrementl ID
+    # Auto Increment ID
     user_info = "(username, hashed_password, email, message, image_url)"
     user_values = f"('{user_create.username}', '{pwd_context.hash(user_create.password1)}', '{user_create.email}', 'default', 'default')"
 
@@ -63,12 +69,14 @@ def create_user(db: Cursor,
 
 def delete_user(db: Cursor,
                 user_id: int):
+    
     db.execute(f"DELETE FROM user WHERE id={user_id}")
     db.connection.commit()
 
 def update_password(db: Cursor,
                     user_id: int,
                     password: str):
+    
     db.execute(f"UPDATE user SET hashed_password='{pwd_context.hash(password)}' WHERE id={user_id}")
     db.connection.commit()
 
