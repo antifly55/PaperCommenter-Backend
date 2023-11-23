@@ -48,3 +48,9 @@ class PasswordUpdate(BaseModel):
         if 'new_password1' in values and v != values['new_password1']:
             raise ValueError('비밀번호가 일치하지 않습니다')
         return v
+
+class Profile(BaseModel):
+    username: str
+    email: str
+    message: str
+    image_url: str

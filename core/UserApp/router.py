@@ -116,10 +116,34 @@ def update_refresh_token(refresh_token: str = Depends(oauth2_scheme),
             "token_type": "bearer",
             "username": db_user['username']
         }
+
+@router.get("/profile", response_model=user_schema.Profile)
+def get_profile(username: str,
+                db: Cursor = Depends(get_db)):
     
+    profile = user_crud.get_profile(db=db, username=username)
+    if not profile:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="데이터를 찾을수 없습니다.")
+    
+    return profile
+
+@router.put("/update/profile-image", status_code=status.HTTP_204_NO_CONTENT)
+def update_profile_image(image_url: str,
+                         db: Cursor = Depends(get_db),
+                         current_user: User = Depends(get_current_user)):
+    
+    user_crud.update_profile_image(db=db, user_id=current_user['id'], image_url=image_url)
+
+@router.put("/update/profile-message", status_code=status.HTTP_204_NO_CONTENT)
+def update_profile_message(message: str,
+                           db: Cursor = Depends(get_db),
+                           current_user: User = Depends(get_current_user)):
+    
+    user_crud.update_profile_message(db=db, user_id=current_user['id'], message=message)
+
 """
 TODO
-- get_profile, update_profile_image, update_profile_message 기능 구현
 - REFRESH_TOKEN_DB를 Redis와 연동
 - 상태 코드 및 API 명세서 정리
 """
