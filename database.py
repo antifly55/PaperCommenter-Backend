@@ -16,3 +16,13 @@ def get_db():
         yield db
     finally:
         db.close()
+
+def execute_select_sql(sql):
+    db = conn.cursor(pymysql.cursors.DictCursor)
+    
+    db.execute(sql)
+    dataset = db.fetchall()
+
+    db.close()
+
+    return dataset
