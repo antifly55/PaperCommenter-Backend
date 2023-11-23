@@ -92,3 +92,27 @@ def update_refresh_token(user_id: int,
 def delete_refresh_token(user_id: int):
     if user_id in REFRESH_TOKENS_DB.keys():
         del REFRESH_TOKENS_DB[user_id]
+
+def get_profile(db: Cursor,
+                username: str):
+
+    hashed_username = hash_for_identification(username)
+    
+    db.execute(f"SELECT (username, email, message, image_url) FROM user WHERE hashed_username='{hashed_username}' and username='{username}'")
+    profile = db.fetchone()
+
+    return profile
+
+def update_profile_image(db: Cursor,
+                         user_id: int,
+                         image_url: str):
+    
+    db.execute(f"UPDATE user SET image_url='{image_url}' WHERE id={user_id}")
+    db.connection.commit()
+
+def update_profile_message(db: Cursor,
+                           user_id: int,
+                           message: str):
+
+    db.execute(f"UPDATE user SET message='{message}' WHERE id={user_id}")
+    db.connection.commit()
