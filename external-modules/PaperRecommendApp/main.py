@@ -4,14 +4,21 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 
+import pickle
+
 from database import execute_select_sql
 
-def main():
-    
-    # get dataset from DB
-    query_results = execute_select_sql("SELECT paper_id, user_id, rating FROM paper_rating")
+## papers, users, ratings to torch.Long/FloatTensor
 
-    # preprocess
+def download_dataset(data_path):
+    dataset = execute_select_sql("SELECT paper_id, user_id, rating FROM paper_rating")
+    with open(data_path, 'wb') as f:
+        pickle.dump(dataset, f)
+
+def preprocess(data_path):
+    with open(data_path, 'rb') as f:
+        dataset = pickle.load(f)
+
     paper_indices = []
     user_indices = []
 
@@ -19,7 +26,7 @@ def main():
     users = []
     ratings = []
 
-    for row in query_results:
+    for row in dataset:
         paper_id, user_id, rating = row['paper_id'], row['user_id'], row['rating']
 
         if paper_id not in paper_indices.keys():
@@ -31,34 +38,38 @@ def main():
         users.append(user_indices[user_id])
         ratings.append(rating)
 
-    ## convert types
-    ## papers, users, ratings to torch.Long/FloatTensor
+    ## save paper_indices, user_indices (pickle)
+    ## save papers, users, ratings (torch)
 
-    # make matrix
-    features = 10
+def train_model(features=10):
+
+    ## load users, papers, ratings (torch)
+    users = None
+    papers = None
+    ratings = None
+
     P = np.zeros(len(users), features, requires_grad=True)
     Q = np.zeros(len(papers), features, requires_grad=True)
 
-    # train default MF
     optimizer = torch.optim.Adam([P, Q], lr=0.1)
 
     for epoch in range(100):
-        hypothesis = torch.sum(P[papers], Q[users], dim=1)
+        hypothesis = torch.sum(P[papers] * Q[users], dim=1)
         cost = F.mse_loss(hypothesis, ratings)
 
         optimizer.zero_grad()
         cost.backward()
         optimizer.step()
 
-        if epoch % 100 == 0:
-            print(f"epoch: {epoch}, cost: {round(cost.item(), 4)}")
-
-    # test
-    ## convert types
+# 하이퍼파라미터 입력, model 실제 수행
+def inference_recommend_rating():
     papers_test = []
     users_test = []
 
     # get ratings of papers_test & users_test
     with torch.no_grad():
         hypo_test = torch.sum(P[papers_test], Q[users_test], dim=1)
-        
+
+# 위 단계에서 구한 값으로 DB 업뎃
+def update_recommend_rating():
+    pass
