@@ -1,14 +1,9 @@
-# TODO: implement PaperRecommendApp with Collaborative Filtering, Airflow
-
 import torch
 import torch.nn.functional as F
-import numpy as np
 
 import pickle
 
 from database import execute_select_sql
-
-## papers, users, ratings to torch.Long/FloatTensor
 
 def download_dataset(data_path):
     dataset = execute_select_sql("SELECT paper_id, user_id, rating FROM paper_rating")
@@ -41,19 +36,23 @@ def preprocess(data_path):
     ## save paper_indices, user_indices (pickle)
     ## save papers, users, ratings (torch)
 
-def train_model(features=10):
+def train_model(features=10, lr=0.1, start_epoch=0, end_epoch=100):
 
     ## load users, papers, ratings (torch)
+    ## type convert - torch.Long/FloatTensor
     users = None
     papers = None
     ratings = None
 
-    P = np.zeros(len(users), features, requires_grad=True)
-    Q = np.zeros(len(papers), features, requires_grad=True)
+    if not start_epoch:
+        P = torch.randn(len(users), features, requires_grad=True)
+        Q = torch.randn(len(papers), features, requires_grad=True)
+        optimizer = torch.optim.Adam([P, Q], lr=lr)
+    else:
+        ## load P, Q, optimizer
+        pass 
 
-    optimizer = torch.optim.Adam([P, Q], lr=0.1)
-
-    for epoch in range(100):
+    for epoch in range(start_epoch, end_epoch):
         hypothesis = torch.sum(P[papers] * Q[users], dim=1)
         cost = F.mse_loss(hypothesis, ratings)
 
@@ -61,15 +60,18 @@ def train_model(features=10):
         cost.backward()
         optimizer.step()
 
-# 하이퍼파라미터 입력, model 실제 수행
-def inference_recommend_rating():
-    papers_test = []
-    users_test = []
+        ## log cost
+
+    ## save P, Q, optimizer
+    ## Xcom으로 가장 cost가 낮은 model 정보 저장
+
+def inference_recommend_rating(model_path):
+
+    ## Xcom으로 가장 cost가 낮은 model 정보 불러오기
+    ## load model
+    P = None
+    Q = None
 
     # get ratings of papers_test & users_test
     with torch.no_grad():
-        hypo_test = torch.sum(P[papers_test], Q[users_test], dim=1)
-
-# 위 단계에서 구한 값으로 DB 업뎃
-def update_recommend_rating():
-    pass
+        hypo_test = torch.sum(P * Q, dim=1)
