@@ -65,9 +65,22 @@ for features in [16, 32, 64, 128]:
 
             operator_dict_train_model[key].append(operator_current_train_model)
 
+operator_inference_recommend_rating = PythonOperator(
+    task_id="inference_recommend_rating",
+    python_callable=inference_recommend_rating,
+    dag=dag
+)
+
 # define final pipeline
-# operator_download_dataset >> operator_preprocess
+operator_download_dataset >> operator_preprocess
 
-# for features, lr in operator_dict_train_model.keys():
-#     key = (features, lr)
+for features, lr in operator_dict_train_model.keys():
+    key = (features, lr)
 
+    for idx in range(len(operator_dict_train_model[key])):
+        if idx == 0:
+            operator_preprocess >> operator_dict_train_model[key][idx]
+        elif idx == len(operator_dict_train_model[key]) - 1:
+            operator_dict_train_model[key][idx] >> operator_inference_recommend_rating
+        else:
+            operator_dict_train_model[key][idx-1] >> operator_dict_train_model[key][idx]
