@@ -1,2 +1,6 @@
 *pycache__
 config.ini
+
+external-modules/PaperRecommendApp/dags
+external-modules/PaperRecommendApp/logs
+external-modules/PaperRecommendApp/plugins
